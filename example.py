@@ -5,7 +5,7 @@ import sys, os
 # add the path to the concavehull module
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), './build/')))
 
-from concavehull import concavehull, galaxy, skeleton, simplify_polylines
+from concavehull import concavehull, galaxy, skeleton, simplify_polylines, simple_join
 
 def genPts():
     n = 100
@@ -38,6 +38,18 @@ def getEgoPoses(file_path):
     ego_poses = np.array(ego_poses)
     return ego_poses
 
+def getTrajectory(file_path):
+    import json
+    trajectory = []
+    with open(file_path, "r") as f:
+        module_json = json.load(f)
+        trajectory_json = module_json["output_json"]["cs_planning_result"]["trajectory"]["path"]
+        for trajectory_item in trajectory_json:
+            trajectory.append([trajectory_item["position_enu"]["x"], trajectory_item["position_enu"]["y"]])
+    # turn pts into a numpy array
+    trajectory = np.array(trajectory)
+    return trajectory
+
 def exportPts(file_name, pts):
     with open(file_name, "w") as f:
         for pt in pts:
@@ -46,6 +58,7 @@ def exportPts(file_name, pts):
 def procFile(file_path):
     pts = getPts(file_path)
     ego_poses = getEgoPoses(file_path)
+    trajectory = getTrajectory(file_path)
     # print(ego_poses)
     # exportPts("random.cin", pts)
 
@@ -56,8 +69,11 @@ def procFile(file_path):
     print("ch size is", len(ch))
     ch_simplified = simplify_polylines(ch, 0.2)
     print("ch_simplified size is", len(ch_simplified))
+    ch_front = galaxy(pts, trajectory[-1], chi_factor=chi_factor)
+    ch_simplified_front = simplify_polylines(ch_front, 0.2)
+    ch_union = simple_join(ch_simplified, ch_simplified_front)
     # exportPts("galaxy.cin", ch_simplified)
-    skeleton_pts = skeleton(ch_simplified)
+    skeleton_pts = skeleton(ch_union)
 
     print(f"found concave hull in {time.time() - s:0.5f}s")
 
@@ -65,8 +81,10 @@ def procFile(file_path):
         import matplotlib.pyplot as plt
 
         plt.scatter(pts[:,0], pts[:,1])
-        plt.plot(ch[:,0], ch[:,1], 'g')
-        plt.plot(ch_simplified[:,0], ch_simplified[:,1], 'b')
+        # plt.plot(ch[:,0], ch[:,1], 'b')
+        # plt.plot(ch_simplified[:,0], ch_simplified[:,1], 'g')
+        # plt.plot(ch_simplified_front[:,0], ch_simplified_front[:,1], 'y')
+        plt.plot(ch_union[:,0], ch_union[:,1], 'g')
         for row in skeleton_pts:
             plt.plot([row[0], row[2]],[row[1], row[3]], 'r')
         plt.title(f"Concave Hull\nChi Factor: {chi_factor}")
