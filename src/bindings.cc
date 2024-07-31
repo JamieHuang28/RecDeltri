@@ -5,6 +5,8 @@
 
 #include "concavehull.hpp"
 #include "galaxy.hpp"
+#include "straight_skeleton_2.hpp"
+#include "simplify_polygon.hpp"
 
 namespace py = pybind11;
 
@@ -63,9 +65,65 @@ py::array_t<double> pygalaxy(const py::array_t<double>& pts, const py::array_t<d
 	return py::array_t<double>(resbuf);
 }
 
+py::array_t<double> pyskeleton(const py::array_t<double>& pts) {
+	py::buffer_info buf = pts.request();
+	
+	if (buf.ndim != 2) {
+		throw std::runtime_error("Number of dimensions must be two");
+	}
+	
+	if (buf.shape[1] != 2) {
+		throw std::runtime_error("Second dimension's size must be two");
+	}
+
+	double *ptr = static_cast<double *>(buf.ptr);
+
+	std::vector<double> ch = skeleton({ptr, ptr+buf.size});
+
+	py::buffer_info resbuf = py::buffer_info(
+		ch.data(),
+		buf.itemsize,
+		buf.format,
+		2,
+		{(size_t)(ch.size() >> 2), (size_t)4},
+		{sizeof(double)*4, sizeof(double)}
+		);
+	return py::array_t<double>(resbuf);
+}
+
+py::array_t<double> py_simplify_polylines(const py::array_t<double>& pts, double ratio) {
+	py::buffer_info buf = pts.request();
+	
+	if (buf.ndim != 2) {
+		throw std::runtime_error("Number of dimensions must be two");
+	}
+	
+	if (buf.shape[1] != 2) {
+		throw std::runtime_error("Second dimension's size must be two");
+	}
+
+	double *ptr = static_cast<double *>(buf.ptr);
+
+	std::vector<double> ch = simplifyPolylines({ptr, ptr+buf.size}, ratio);
+
+	py::buffer_info resbuf = py::buffer_info(
+		ch.data(),
+		buf.itemsize,
+		buf.format,
+		buf.ndim,
+		{(size_t)(ch.size() >> 1), (size_t)2},
+		buf.strides
+		);
+	return py::array_t<double>(resbuf);
+}
+
 PYBIND11_MODULE(concavehull, m) {
 	m.def("concavehull", &pyconcavehull, "Find concave hull from array of 2D points",
 	      py::arg("pts"), py::arg("chi_factor") = 0.1);
 	m.def("galaxy", &pygalaxy, "Find galaxy from array of 2D points",
 	      py::arg("pts"), py::arg("center"), py::arg("chi_factor") = 0.1);
+	m.def("skeleton", &pyskeleton, "Find straight skeleton from array of 2D points",
+	      py::arg("pts"));
+	m.def("simplify_polylines", &py_simplify_polylines, "Simplify polylines",
+	      py::arg("pts"), py::arg("ratio") = 0.1);
 }
