@@ -59,6 +59,7 @@ def procFile(file_path):
     pts = getPts(file_path)
     ego_poses = getEgoPoses(file_path)
     trajectory = getTrajectory(file_path)
+    front_center = trajectory[-1]
     # print(ego_poses)
     # exportPts("random.cin", pts)
 
@@ -69,7 +70,7 @@ def procFile(file_path):
     print("ch size is", len(ch))
     ch_simplified = simplify_polylines(ch, 0.2)
     print("ch_simplified size is", len(ch_simplified))
-    ch_front = galaxy(pts, trajectory[-1], chi_factor=chi_factor)
+    ch_front = galaxy(pts, front_center, chi_factor=chi_factor)
     ch_simplified_front = simplify_polylines(ch_front, 0.2)
     ch_union = simple_join(ch_simplified, ch_simplified_front)
     # exportPts("galaxy.cin", ch_simplified)
@@ -82,11 +83,13 @@ def procFile(file_path):
 
         plt.scatter(pts[:,0], pts[:,1])
         # plt.plot(ch[:,0], ch[:,1], 'b')
-        # plt.plot(ch_simplified[:,0], ch_simplified[:,1], 'g')
-        # plt.plot(ch_simplified_front[:,0], ch_simplified_front[:,1], 'y')
-        plt.plot(ch_union[:,0], ch_union[:,1], 'g')
+        plt.scatter(ego_poses[0][0], ego_poses[1][1], c='g')
+        plt.scatter(front_center[0], front_center[1], c='y')
+        plt.plot(ch_simplified[:,0], ch_simplified[:,1], 'g')
+        plt.plot(ch_simplified_front[:,0], ch_simplified_front[:,1], 'y')
+        plt.plot(ch_union[:,0], ch_union[:,1], '--r')
         for row in skeleton_pts:
-            plt.plot([row[0], row[2]],[row[1], row[3]], 'r')
+            plt.plot([row[0], row[2]],[row[1], row[3]], '--b')
         plt.title(f"Concave Hull\nChi Factor: {chi_factor}")
         plt.show()
 
