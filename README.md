@@ -23,5 +23,5 @@ python3 example.py ./resources/20_module_test.json
 ```
 run example of c++, which is now under development:
 ```bash
-./concavehull_example
+./example
 ```

@@ -40,4 +40,4 @@ target_link_libraries(${PROJECT_NAME} PRIVATE ${pybind11_LIBRARIES})
 # Link the executable to CGAL and third-party libraries
 target_link_libraries(${PROJECT_NAME}   ${CGAL_LIBRARIES} ${CGAL_3RD_PARTY_LIBRARIES} )
 
-add_executable(${PROJECT_NAME}_example src/example.cpp)
+add_executable(example src/example.cpp)
