@@ -43,13 +43,23 @@ EdgePtr VRot(VertexPtr v_i, EdgePtr e_ref) {
   return v_i->edges().front();
 }
 
-const int MAX_H = 2;
-static std::vector<EdgePtr> skeleton;
+class SkeletonPyramid {
+public:
+  ~SkeletonPyramid() {}
+  static void skeletonPyramid(VertexPtr v_i, EdgePtr e_cur, int h);
+  static std::vector<EdgePtr> &skeleton() {
+    return skeleton_;
+  }
+private:
+  static const int MAX_H = 2;
+  static std::vector<EdgePtr> skeleton_;
+};
+std::vector<EdgePtr> SkeletonPyramid::skeleton_{};
 
-void skeletonPyramid(VertexPtr v_i, EdgePtr e_cur, int h) {
+void SkeletonPyramid::skeletonPyramid(VertexPtr v_i, EdgePtr e_cur, int h) {
   EdgePtr e_ref = e_cur;
   if (h < MAX_H) {
-    skeleton.push_back(e_ref);
+    skeleton_.push_back(e_ref);
   }
   std::vector<R_tab_elem> R_tab;
   e_cur = VRot(v_i, e_ref);

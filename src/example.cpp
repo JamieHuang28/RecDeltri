@@ -149,8 +149,8 @@ int main() {
   v3_ptr->edges().push_back(e3_ptr);
   v4_ptr->edges().push_back(e4_ptr);
 
-  skeletonPyramid(v1_ptr, e1_ptr, 0);
-  for (const EdgePtr &edge : skeleton) {
+  SkeletonPyramid::skeletonPyramid(v1_ptr, e1_ptr, 0);
+  for (const EdgePtr &edge : SkeletonPyramid::skeleton()) {
     std::cout << edge->idx() << std::endl;
   }
   return 0;
