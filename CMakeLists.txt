@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(concavehull)
 set(CMAKE_CXX_STANDARD 11)
+# set build type to release
+set(CMAKE_BUILD_TYPE Debug)
 
 set(PYBIND11_PYTHON_VERSION 3.7)
 find_package(pybind11 REQUIRED)
@@ -41,3 +43,4 @@ target_link_libraries(${PROJECT_NAME} PRIVATE ${pybind11_LIBRARIES})
 target_link_libraries(${PROJECT_NAME}   ${CGAL_LIBRARIES} ${CGAL_3RD_PARTY_LIBRARIES} )
 
 add_executable(example src/example.cpp)
+add_executable(test_hier_skel src/test_hier_skel.cpp)

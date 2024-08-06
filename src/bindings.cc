@@ -8,6 +8,7 @@
 #include "straight_skeleton_2.hpp"
 #include "simplify_polygon.hpp"
 #include "simple_join.hpp"
+#include "hierarchic_straight_skeleton_2.hpp"
 
 namespace py = pybind11;
 
@@ -92,6 +93,32 @@ py::array_t<double> pyskeleton(const py::array_t<double>& pts) {
 	return py::array_t<double>(resbuf);
 }
 
+py::array_t<double> py_hierarchic_skeleton(const py::array_t<double>& pts) {
+	py::buffer_info buf = pts.request();
+	
+	if (buf.ndim != 2) {
+		throw std::runtime_error("Number of dimensions must be two");
+	}
+	
+	if (buf.shape[1] != 2) {
+		throw std::runtime_error("Second dimension's size must be two");
+	}
+
+	double *ptr = static_cast<double *>(buf.ptr);
+
+	std::vector<double> ch = hierarchicStraightSkeleton({ptr, ptr+buf.size});
+
+	py::buffer_info resbuf = py::buffer_info(
+		ch.data(),
+		buf.itemsize,
+		buf.format,
+		2,
+		{(size_t)(ch.size() >> 2), (size_t)4},
+		{sizeof(double)*4, sizeof(double)}
+		);
+	return py::array_t<double>(resbuf);
+}
+
 py::array_t<double> py_simplify_polylines(const py::array_t<double>& pts, double ratio) {
 	py::buffer_info buf = pts.request();
 	
@@ -158,4 +185,6 @@ PYBIND11_MODULE(concavehull, m) {
 	      py::arg("pts"), py::arg("ratio") = 0.1);
 	m.def("simple_join", &py_simple_join, "Join two polylines",
 	      py::arg("pts"), py::arg("pts_other"));
+	m.def("hierarchic_skeleton", &py_hierarchic_skeleton, "Find hierarchic straight skeleton from array of 2D points",
+	      py::arg("pts"));
 }

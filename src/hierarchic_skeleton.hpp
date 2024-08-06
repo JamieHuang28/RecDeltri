@@ -1,3 +1,5 @@
+#pragma once
+
 #include <deque>
 #include <vector>
 #include <algorithm>
@@ -8,19 +10,21 @@ typedef std::shared_ptr<EdgeInterface> EdgePtr;
 class VertexInterface {
 public:
   virtual ~VertexInterface() {}
-  virtual std::deque<EdgePtr> &edges() = 0;
+  virtual std::deque<EdgePtr> edges() = 0;
   virtual double &deltaR() = 0;
+  virtual const double &x() = 0;
+  virtual const double &y() = 0;
+  virtual bool operator==(const VertexInterface &rhs) const = 0;
 };
 typedef std::shared_ptr<VertexInterface> VertexPtr;
 
 class EdgeInterface {
 public:
   virtual ~EdgeInterface() {}
-  virtual std::vector<EdgePtr> &head_edges() = 0;
-  virtual std::vector<EdgePtr> &tail_edges() = 0;
   virtual VertexPtr &head_vertex() = 0;
   virtual VertexPtr &tail_vertex() = 0;
   virtual int &idx() = 0;
+  virtual bool operator==(const EdgeInterface &rhs) const = 0;
 };
 
 typedef std::pair<EdgePtr, double> R_tab_elem;
@@ -29,18 +33,26 @@ bool operator<(const R_tab_elem &lhs, const R_tab_elem &rhs) {
 }
 
 EdgePtr VRot(VertexPtr v_i, EdgePtr e_ref) {
-  if (v_i->edges().empty()) {
+  std::deque<EdgePtr> edges = v_i->edges();
+  printf("VRot: edges.size(): %lu\n", edges.size());
+  if (edges.empty()) {
     return nullptr;
   }
 
-  EdgePtr e = v_i->edges().front();
-  while (e != e_ref) {
-    v_i->edges().pop_front();
-    v_i->edges().push_back(e);
-    e = v_i->edges().front();
-  } // unsafe, need to check if e_ref is in v_i->edges() elsewhere endless loop
-  v_i->edges().pop_front();
-  return v_i->edges().front();
+  EdgePtr e = edges.front();
+  size_t i = 0;
+  while (!(*e == *e_ref)) {
+    if (++i == edges.size()) {
+      printf("VRot: edge not found\n");
+      return nullptr;
+    }
+    edges.pop_front();
+    edges.push_back(e);
+    e = edges.front();
+  }
+  edges.pop_front();
+  edges.push_back(e);
+  return edges.front();
 }
 
 class SkeletonPyramid {
@@ -51,22 +63,26 @@ public:
     return skeleton_;
   }
 private:
-  static const int MAX_H = 2;
+  static const int MAX_H = 5;
   static std::vector<EdgePtr> skeleton_;
 };
 std::vector<EdgePtr> SkeletonPyramid::skeleton_{};
 
 void SkeletonPyramid::skeletonPyramid(VertexPtr v_i, EdgePtr e_cur, int h) {
+  if (v_i == nullptr || e_cur == nullptr) {
+    return;
+  }
   EdgePtr e_ref = e_cur;
+  printf("h: %d\n", h);
   if (h < MAX_H) {
     skeleton_.push_back(e_ref);
   }
   std::vector<R_tab_elem> R_tab;
   e_cur = VRot(v_i, e_ref);
-  while (e_cur != e_ref && e_cur != nullptr) {
+  while (e_cur != nullptr && !(*e_cur == *e_ref)) {
     printf("e_cur: %d\n", e_cur->idx());
     double r = std::numeric_limits<double>::max();
-    if (e_cur->head_vertex() == v_i) {
+    if (*e_cur->head_vertex() == *v_i) {
       r = e_cur->tail_vertex()->deltaR();
     } else {
       r = e_cur->head_vertex()->deltaR();
@@ -75,10 +91,13 @@ void SkeletonPyramid::skeletonPyramid(VertexPtr v_i, EdgePtr e_cur, int h) {
     e_cur = VRot(v_i, e_cur);
   }
 
+  if (R_tab.empty()) {
+    return;
+  }
   std::sort(R_tab.begin(), R_tab.end());
   for (auto &elem : R_tab) {
     EdgePtr e_cur = elem.first;
-    if (e_cur->head_vertex() == v_i) {
+    if (*e_cur->head_vertex() == *v_i) {
       skeletonPyramid(e_cur->tail_vertex(), e_cur, h);
     } else {
       skeletonPyramid(e_cur->head_vertex(), e_cur, h);

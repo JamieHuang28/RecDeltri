@@ -75,11 +75,15 @@ std::vector<double> simpleJoin (const std::vector<double> &p1, const std::vector
   }
 
   std::cout << "P = "; print_polygon (P);
+  if (P.is_clockwise_oriented())
+    P.reverse_orientation();
 
   Polygon_2 Q;
   for (int i = 0; i < p2.size(); i+=2) {
     Q.push_back (Point_2 (p2[i], p2[i+1]));
   }
+  if (Q.is_clockwise_oriented())
+    Q.reverse_orientation();
 
   std::cout << "Q = "; print_polygon (Q);
 
