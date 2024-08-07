@@ -84,7 +84,12 @@ void SkeletonPyramid::skeletonPyramid(VertexPtr v_i, EdgePtr e_cur, int h) {
   EdgePtr e_ref = e_cur;
   printf("h: %d\n", h);
   if (h <= max_h_) {
-    skeleton_.push_back(e_ref);
+    bool is_deltaR_valid = e_ref->head_vertex()->deltaR() > min_r_ || e_ref->tail_vertex()->deltaR() > min_r_;
+    bool is_vertex_valid = std::abs(e_ref->head_vertex()->deltaR()) > 1e-6 && std::abs(e_ref->tail_vertex()->deltaR()) > 1e-6;
+    if(is_deltaR_valid && is_vertex_valid)
+    {
+      skeleton_.push_back(e_ref);
+    }
   }
   std::vector<R_tab_elem> R_tab;
   e_cur = VRot(v_i, e_ref);
@@ -96,11 +101,7 @@ void SkeletonPyramid::skeletonPyramid(VertexPtr v_i, EdgePtr e_cur, int h) {
     } else {
       r = e_cur->head_vertex()->deltaR();
     }
-    if (r >= min_r_) {
-      R_tab.push_back(std::make_pair(e_cur, r));
-    } else {
-      printf("edge is ignored for deltaR: %f\n", r);
-    }
+    R_tab.push_back(std::make_pair(e_cur, r));
     e_cur = VRot(v_i, e_cur);
   }
 
