@@ -62,11 +62,20 @@ public:
   static std::vector<EdgePtr> &skeleton() {
     return skeleton_;
   }
+  static void setMaxh(int h) {
+    max_h_ = h;
+  }
+  static void setMinR(double r) {
+    min_r_ = r;
+  }
 private:
-  static const int MAX_H = 5;
+  static int max_h_;
+  static double min_r_;
   static std::vector<EdgePtr> skeleton_;
 };
 std::vector<EdgePtr> SkeletonPyramid::skeleton_{};
+int SkeletonPyramid::max_h_{0};
+double SkeletonPyramid::min_r_{1.0};
 
 void SkeletonPyramid::skeletonPyramid(VertexPtr v_i, EdgePtr e_cur, int h) {
   if (v_i == nullptr || e_cur == nullptr) {
@@ -74,7 +83,7 @@ void SkeletonPyramid::skeletonPyramid(VertexPtr v_i, EdgePtr e_cur, int h) {
   }
   EdgePtr e_ref = e_cur;
   printf("h: %d\n", h);
-  if (h < MAX_H) {
+  if (h <= max_h_) {
     skeleton_.push_back(e_ref);
   }
   std::vector<R_tab_elem> R_tab;
@@ -87,7 +96,11 @@ void SkeletonPyramid::skeletonPyramid(VertexPtr v_i, EdgePtr e_cur, int h) {
     } else {
       r = e_cur->head_vertex()->deltaR();
     }
-    R_tab.push_back(std::make_pair(e_cur, r));
+    if (r >= min_r_) {
+      R_tab.push_back(std::make_pair(e_cur, r));
+    } else {
+      printf("edge is ignored for deltaR: %f\n", r);
+    }
     e_cur = VRot(v_i, e_cur);
   }
 

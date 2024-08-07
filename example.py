@@ -85,7 +85,7 @@ def procFile(file_path):
     # exportPts("galaxy.cin", ch_simplified)
     skeleton_pts = skeleton(ch_union)
     exportPolygon("skeleton.wkt", ch_union)
-    hierarchic_skeleton_pts = hierarchic_skeleton(ch_union)
+    hierarchic_skeleton_pts = hierarchic_skeleton(ch_union, 1, 1.1)
     # exportPts("skeleton.cin", skeleton_pts)
 
     print(f"found concave hull in {time.time() - s:0.5f}s")
@@ -99,9 +99,9 @@ def procFile(file_path):
         # plt.scatter(front_center[0], front_center[1], c='y')
         # plt.plot(ch_simplified[:,0], ch_simplified[:,1], 'g')
         # plt.plot(ch_simplified_front[:,0], ch_simplified_front[:,1], 'y')
-        # plt.plot(ch_union[:,0], ch_union[:,1], '--r')
+        plt.plot(ch_union[:,0], ch_union[:,1], 'g')
         for row in skeleton_pts:
-            plt.plot([row[0], row[2]],[row[1], row[3]], 'g')
+            plt.plot([row[0], row[2]],[row[1], row[3]], 'y')
         for row in hierarchic_skeleton_pts:
             plt.plot([row[0], row[2]],[row[1], row[3]], 'r')
         plt.title(f"Concave Hull\nChi Factor: {chi_factor}")

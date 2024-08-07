@@ -39,6 +39,9 @@ std::vector<double> print_straight_skeleton( CGAL::Straight_skeleton_2<K> const&
 
   for ( Halfedge_const_iterator i = ss.halfedges_begin(); i != ss.halfedges_end(); ++i )
   {
+    if (!i->is_bisector()) {
+      continue;
+    }
     std::pair<double, double> pt_coord;
     pt_coord = print_point(i->opposite()->vertex()->point()) ;
     result.push_back(pt_coord.first);

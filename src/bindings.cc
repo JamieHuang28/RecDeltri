@@ -93,7 +93,7 @@ py::array_t<double> pyskeleton(const py::array_t<double>& pts) {
 	return py::array_t<double>(resbuf);
 }
 
-py::array_t<double> py_hierarchic_skeleton(const py::array_t<double>& pts) {
+py::array_t<double> py_hierarchic_skeleton(const py::array_t<double>& pts, int max_h, double min_r) {
 	py::buffer_info buf = pts.request();
 	
 	if (buf.ndim != 2) {
@@ -106,7 +106,7 @@ py::array_t<double> py_hierarchic_skeleton(const py::array_t<double>& pts) {
 
 	double *ptr = static_cast<double *>(buf.ptr);
 
-	std::vector<double> ch = hierarchicStraightSkeleton({ptr, ptr+buf.size});
+	std::vector<double> ch = hierarchicStraightSkeleton({ptr, ptr+buf.size}, max_h, min_r);
 
 	py::buffer_info resbuf = py::buffer_info(
 		ch.data(),
@@ -186,5 +186,5 @@ PYBIND11_MODULE(concavehull, m) {
 	m.def("simple_join", &py_simple_join, "Join two polylines",
 	      py::arg("pts"), py::arg("pts_other"));
 	m.def("hierarchic_skeleton", &py_hierarchic_skeleton, "Find hierarchic straight skeleton from array of 2D points",
-	      py::arg("pts"));
+	      py::arg("pts"), py::arg("max_h"), py::arg("min_r"));
 }

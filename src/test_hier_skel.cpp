@@ -1,11 +1,24 @@
 #include "hierarchic_straight_skeleton_2.hpp"
 #include <CGAL/IO/WKT.h>
 
+Polygon_2 buildRectangularPolygon(double x, double y, double w, double h) {
+  Polygon_2 poly;
+  poly.push_back(Point(x, y));
+  poly.push_back(Point(x+w, y));
+  poly.push_back(Point(x+w, y+h));
+  poly.push_back(Point(x, y+h));
+  return poly;
+}
+
 int main(int argc, char* argv[])
 {
-  std::ifstream ifs( (argc==1)?"../skeleton.wkt":argv[1]);
   Polygon_2 poly ;
-  CGAL::read_polygon_WKT(ifs, poly);
+  if (argc == 1) {
+    poly = buildRectangularPolygon(0, 0, 2, 1);
+  } else {
+    std::ifstream ifs(argv[1]);
+    CGAL::read_polygon_WKT(ifs, poly);
+  }
 
   // make poly counterclockwise oriented
   if ( poly.is_clockwise_oriented() )
@@ -14,6 +27,10 @@ int main(int argc, char* argv[])
 
   // You can pass the polygon via an iterator pair
   SsPtr iss = CGAL::create_interior_straight_skeleton_2(poly.vertices_begin(), poly.vertices_end());
+  // print all vertices
+  for ( Ss::Vertex_const_iterator i = iss->vertices_begin(); i != iss->vertices_end(); ++i ) {
+    printf("vertex: (%f, %f)\n", i->point().x(), i->point().y());
+  }
 
   EdgePtr root_e = nullptr;
   VertexPtr root_v = nullptr;

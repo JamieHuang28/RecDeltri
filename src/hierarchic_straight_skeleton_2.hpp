@@ -56,7 +56,7 @@ public:
   bool operator==(const EdgeInterface &rhs) const {
     const EdgeAdaptor *rhs_ptr = dynamic_cast<const EdgeAdaptor *>(&rhs);
     if (rhs_ptr) {
-      return halfedge_ == rhs_ptr->halfedge_;
+      return halfedge_ == rhs_ptr->halfedge_ || halfedge_ == rhs_ptr->halfedge_->opposite();
     }
     return false;
   }
@@ -72,9 +72,9 @@ std::deque<EdgePtr> VertexAdaptor::edges() {
   printf("VertexAdaptor::edges\n");
   std::deque<EdgePtr> edges;
   for ( Ss::Halfedge_const_iterator i = ss_->halfedges_begin(); i != ss_->halfedges_end(); ++i ) {
-    if (i->vertex() == handle_) {
-      printf("e: (%f, %f) == e_ref: (%f, %f)\n", i->vertex()->point().x(), i->vertex()->point().y(),
-      handle_->point().x(), handle_->point().y());
+    if (i->is_bisector() && i->vertex() == handle_) {
+      printf("e: (%f, %f)(%f, %f)\n", i->opposite()->vertex()->point().x(), i->opposite()->vertex()->point().y(),
+      i->vertex()->point().x(), i->vertex()->point().y());
       edges.emplace_back(new EdgeAdaptor(ss_, i, 0));
     }
   }
@@ -100,7 +100,7 @@ void createGraph(SsPtr ss, EdgePtr &root_e, VertexPtr &root_v, bool is_inverse =
   root_e = std::make_shared<EdgeAdaptor>(ss, max_halfedge, 0);
 }
 
-std::vector<double> hierarchicStraightSkeleton(const std::vector<double> &coords)
+std::vector<double> hierarchicStraightSkeleton(const std::vector<double> &coords, int max_h, double min_r)
 {
   Polygon_2 poly ;
   for (size_t i = 0; i < coords.size(); i += 2)
@@ -120,6 +120,8 @@ std::vector<double> hierarchicStraightSkeleton(const std::vector<double> &coords
   EdgePtr root_e = nullptr;
   VertexPtr root_v = nullptr;
   createGraph(iss, root_e, root_v);
+  SkeletonPyramid::setMaxh(max_h);
+  SkeletonPyramid::setMinR(min_r);
   SkeletonPyramid::skeletonPyramid(root_v, root_e, 0);
 
   std::vector<double> result;
