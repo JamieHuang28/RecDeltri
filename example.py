@@ -64,18 +64,26 @@ def exportPolygon(file_name, pts):
         f.seek(f.tell() - 2, os.SEEK_SET)
         f.write("))")
 
+def interpolateFrontCenter(trajectory, length):
+    import math
+    traj_length = math.hypot(trajectory[-1][0] - trajectory[0][0], trajectory[-1][1] - trajectory[0][1])
+    interp_ratio = length / traj_length
+    front_center = [trajectory[0][0] + interp_ratio * (trajectory[-1][0] - trajectory[0][0]), trajectory[0][1] + interp_ratio * (trajectory[-1][1] - trajectory[0][1])]
+    return front_center
+
 def procFile(file_path):
     pts = getPts(file_path)
     ego_poses = getEgoPoses(file_path)
     trajectory = getTrajectory(file_path)
-    front_center = trajectory[-1]
+    center = ego_poses[0]
+    front_center = interpolateFrontCenter(trajectory, 4.0)
     # print(ego_poses)
     # exportPts("random.cin", pts)
 
     s = time.time()
     chi_factor = 1.0
     # ch = concavehull(pts, chi_factor=chi_factor)
-    ch = galaxy(pts, ego_poses[0], chi_factor=chi_factor)
+    ch = galaxy(pts, center, chi_factor=chi_factor)
     print("ch size is", len(ch))
     ch_simplified = simplify_polylines(ch, 0.2)
     print("ch_simplified size is", len(ch_simplified))
@@ -95,17 +103,23 @@ def procFile(file_path):
 
         plt.scatter(pts[:,0], pts[:,1])
         # plt.plot(ch[:,0], ch[:,1], 'b')
-        # plt.scatter(ego_poses[0][0], ego_poses[1][1], c='g')
-        # plt.scatter(front_center[0], front_center[1], c='y')
-        # plt.plot(ch_simplified[:,0], ch_simplified[:,1], 'g')
-        # plt.plot(ch_simplified_front[:,0], ch_simplified_front[:,1], 'y')
-        plt.plot(ch_union[:,0], ch_union[:,1], 'g')
+        plt.scatter(center[0], center[1], c='m')
+        plt.scatter(front_center[0], front_center[1], c='c')
+        plt.plot(ch_simplified[:,0], ch_simplified[:,1], '--m')
+        plt.plot(ch_simplified_front[:,0], ch_simplified_front[:,1], '--c')
+        plt.plot(ch_union[:,0], ch_union[:,1], '--y')
         for row in skeleton_pts:
             plt.plot([row[0], row[2]],[row[1], row[3]], 'y')
         for row in hierarchic_skeleton_pts:
             plt.plot([row[0], row[2]],[row[1], row[3]], 'r')
-        plt.title(f"Concave Hull\nChi Factor: {chi_factor}")
+        plt.title(f"file: {file_path.split('/')[-1]}")
+        # set ratio of axis equal
+        plt.axis('equal')
+        # set display size of the plot
+        plt.gcf().set_size_inches(8, 8)
         plt.show()
+        # clear the plot
+        plt.clf()
 
     except ImportError:
         print("Tried plotting, but matplotlib not found")
@@ -115,4 +129,11 @@ if __name__ == "__main__":
         print("Usage: python example.py <path_to_input_json>")
         sys.exit(1)
     file_path = sys.argv[1]
-    procFile(file_path)
+    # if file_path is a directory, process all files in the directory
+    if os.path.isdir(file_path):
+        for file_name in os.listdir(file_path):
+            if file_name.endswith(".json"):
+                print(f"Processing {file_name}")
+                procFile(os.path.join(file_path, file_name))
+    else:
+        procFile(file_path)

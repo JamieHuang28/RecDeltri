@@ -57,25 +57,26 @@ EdgePtr VRot(VertexPtr v_i, EdgePtr e_ref) {
 
 class SkeletonPyramid {
 public:
+  SkeletonPyramid() {}
   ~SkeletonPyramid() {}
-  static void skeletonPyramid(VertexPtr v_i, EdgePtr e_cur, int h);
-  static std::vector<EdgePtr> &skeleton() {
+  void skeletonPyramid(VertexPtr v_i, EdgePtr e_cur, int h);
+  std::vector<EdgePtr> &skeleton() {
     return skeleton_;
   }
-  static void setMaxh(int h) {
+  void setMaxh(int h) {
     max_h_ = h;
   }
-  static void setMinR(double r) {
+  void setMinR(double r) {
     min_r_ = r;
   }
 private:
-  static int max_h_;
-  static double min_r_;
-  static std::vector<EdgePtr> skeleton_;
+  int max_h_;
+  double min_r_;
+  std::vector<EdgePtr> skeleton_;
 };
-std::vector<EdgePtr> SkeletonPyramid::skeleton_{};
-int SkeletonPyramid::max_h_{0};
-double SkeletonPyramid::min_r_{1.0};
+// std::vector<EdgePtr> SkeletonPyramid::skeleton_{};
+// int SkeletonPyramid::max_h_{0};
+// double SkeletonPyramid::min_r_{1.0};
 
 void SkeletonPyramid::skeletonPyramid(VertexPtr v_i, EdgePtr e_cur, int h) {
   if (v_i == nullptr || e_cur == nullptr) {

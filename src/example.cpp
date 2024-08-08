@@ -166,8 +166,9 @@ int main() {
   e4_ptr->tail_vertex() = v4_ptr;
   // v4_ptr->edges().push_back(e4_ptr);
 
-  SkeletonPyramid::skeletonPyramid(v1_ptr, e1_ptr, 0);
-  for (const EdgePtr &edge : SkeletonPyramid::skeleton()) {
+  SkeletonPyramid sp;
+  sp.skeletonPyramid(v1_ptr, e1_ptr, 0);
+  for (const EdgePtr &edge : sp.skeleton()) {
     std::cout << edge->idx() << std::endl;
   }
   return 0;

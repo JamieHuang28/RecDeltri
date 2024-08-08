@@ -1,13 +1,13 @@
-# RecDeltri: Reconstruction Library based on Delaunay Triangulation and Graph Cuts
-implementation of ["Efficient Multi-View Reconstruction of Large-Scale Scenes
-using Interest Points, Delaunay Triangulation and Graph Cuts"](https://www.di.ens.fr/willow/pdfs/07iccv_a.pdf) in C++.
+# HierarchicVoronoiSkeleton: HierarchicVoronoiSkeleton
+implementation of ["Hierarchic Voronoi skeletons"](https://citeseerx.ist.psu.edu/document?repid=rep1&type=pdf&doi=a90e937f5f2b77c90244211f2cd48cb9f5dfe767) in C++.
 
 The algorithm is implemented in C++, and python bindings are available through pybind11.
 
 ## Dependencies
-- libcgal-dev
+- libcgal-dev(>=5.2.4)
 - libgmp3-dev
-(Dependencies is complicated, so I decided to use docker to build the project soon)
+- libboost1.65-dev(or higher)
+(Dependencies is complicated, so I decided to use docker to build the project later)
 
 ## Build and Run
 build:
@@ -21,7 +21,7 @@ run example of hull generation and skeletonization:
 ```bash
 python3 example.py ./resources/20_module_test.json
 ```
-run example of c++, which is now under development:
+run example of c++ which is coincident with the article:
 ```bash
 ./example
 ```

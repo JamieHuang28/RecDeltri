@@ -100,8 +100,7 @@ void createGraph(SsPtr ss, EdgePtr &root_e, VertexPtr &root_v, bool is_inverse =
   root_e = std::make_shared<EdgeAdaptor>(ss, max_halfedge, 0);
 }
 
-std::vector<double> hierarchicStraightSkeleton(const std::vector<double> &coords, int max_h, double min_r)
-{
+Polygon_2 makePolygon(const std::vector<double> &coords) {
   Polygon_2 poly ;
   for (size_t i = 0; i < coords.size(); i += 2)
   {
@@ -113,19 +112,24 @@ std::vector<double> hierarchicStraightSkeleton(const std::vector<double> &coords
   if ( poly.is_clockwise_oriented() )
     poly.reverse_orientation() ;
   assert(poly.is_counterclockwise_oriented());
+  return poly;
+}
 
+std::vector<double> hierarchicStraightSkeletonFromPoly(const Polygon_2 &poly, int max_h, double min_r)
+{
   // You can pass the polygon via an iterator pair
   SsPtr iss = CGAL::create_interior_straight_skeleton_2(poly.vertices_begin(), poly.vertices_end());
 
   EdgePtr root_e = nullptr;
   VertexPtr root_v = nullptr;
   createGraph(iss, root_e, root_v);
-  SkeletonPyramid::setMaxh(max_h);
-  SkeletonPyramid::setMinR(min_r);
-  SkeletonPyramid::skeletonPyramid(root_v, root_e, 0);
+  SkeletonPyramid sp;
+  sp.setMaxh(max_h);
+  sp.setMinR(min_r);
+  sp.skeletonPyramid(root_v, root_e, 0);
 
   std::vector<double> result;
-  for (const EdgePtr &edge : SkeletonPyramid::skeleton()) {
+  for (const EdgePtr &edge : sp.skeleton()) {
     result.push_back(edge->head_vertex()->x());
     result.push_back(edge->head_vertex()->y());
     result.push_back(edge->tail_vertex()->x());
@@ -133,12 +137,18 @@ std::vector<double> hierarchicStraightSkeleton(const std::vector<double> &coords
   }
 
   createGraph(iss, root_e, root_v, true);
-  SkeletonPyramid::skeletonPyramid(root_v, root_e, 0);
-  for (const EdgePtr &edge : SkeletonPyramid::skeleton()) {
+  sp.skeletonPyramid(root_v, root_e, 0);
+  for (const EdgePtr &edge : sp.skeleton()) {
     result.push_back(edge->head_vertex()->x());
     result.push_back(edge->head_vertex()->y());
     result.push_back(edge->tail_vertex()->x());
     result.push_back(edge->tail_vertex()->y());
   }
   return result;
+}
+
+std::vector<double> hierarchicStraightSkeleton(const std::vector<double> &coords, int max_h, double min_r)
+{
+  Polygon_2 poly  = makePolygon(coords);
+  return hierarchicStraightSkeletonFromPoly(poly, max_h, min_r);
 }
