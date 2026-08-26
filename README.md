@@ -1,5 +1,5 @@
 # HierarchicVoronoiSkeleton
-implementation of ["Hierarchic Voronoi skeletons"](https://citeseerx.ist.psu.edu/document?repid=rep1&type=pdf&doi=a90e937f5f2b77c90244211f2cd48cb9f5dfe767) in C++.
+How to fully extract the open-space area in arbitrary shape? This probject is the first implementation of [Hierarchic Voronoi skeletons](https://citeseerx.ist.psu.edu/document?repid=rep1&type=pdf&doi=a90e937f5f2b77c90244211f2cd48cb9f5dfe767) in C++.
 
 The algorithm is implemented in C++, and python bindings are available through pybind11.
 
